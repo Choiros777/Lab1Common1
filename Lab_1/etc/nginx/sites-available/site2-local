@@ -1,0 +1,32 @@
+# HTTP → HTTPS редирект
+server {
+    listen 80;
+    server_name site2.local www.site2.local;
+    # редирект всего запроса на https с тем же хостом и путём
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name site2.local www.site2.local;
+
+    ssl_certificate     /etc/ssl/certs/site2-local.crt;
+    ssl_certificate_key /etc/ssl/private/site2-local.key;
+
+    # базовые настройки TLS (минимум)
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    
+    root /var/www/site2.local;
+    index index.html;
+    error_page 404 /404.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location = /404.html {
+        internal;
+    }
+}
