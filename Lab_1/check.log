@@ -1,0 +1,482 @@
+lisa@Ubuntu:~$ ./check.sh 
+Проверяем редирект с http на https.
+Выполняю: curl -I http://notes.app
+Результат:
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:47:22 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+Location: https://notes.app/
+
+Проверяем работу двух инстансов бэкенда. Для завершения проверки нажмите клавишу q
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5101,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5101,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5101,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5101,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5101,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Выполняю: curl -ks https://notes.app/api/backend_health
+Результат:
+{"request_port":5102,"status":"ok"}
+
+Проверяем curl на /admin без пароля.
+Выполняю: curl -kL https://notes.app/admin
+Результат:
+<html>
+<head><title>401 Authorization Required</title></head>
+<body>
+<center><h1>401 Authorization Required</h1></center>
+<hr><center>nginx/1.28.3 (Ubuntu)</center>
+</body>
+</html>
+
+Проверяем реакцию сервиса Наши заметки на флуд запросами.
+Введите количество запросов: 30
+
+Выполняю запрос №1: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №2: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №3: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №4: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №5: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №6: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №7: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №8: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №9: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №10: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №11: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №12: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №13: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №14: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №15: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №16: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №17: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №18: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №19: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №20: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №21: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №22: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №23: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №24: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №25: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №26: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №27: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №28: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 200 OK
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: application/json
+Content-Length: 677
+Connection: keep-alive
+Access-Control-Allow-Origin: http://127.0.0.1:5173
+Vary: Origin
+
+
+Выполняю запрос №29: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+
+Выполняю запрос №30: curl -kI https://notes.app/api/notes
+Результат:
+HTTP/1.1 429 Too Many Requests
+Server: nginx/1.28.3 (Ubuntu)
+Date: Tue, 06 Oct 2026 09:48:11 GMT
+Content-Type: text/html
+Content-Length: 178
+Connection: keep-alive
+
+Проверяем  ● запрос с чужим Host → отдаётся только его проект, не соседний.
+Выполняю: curl -I http://127.0.0.1/
+Результат:
+curl: (52) Empty reply from server
+
+Проверяем ● запрос несуществующей страницы → ваша 404.
+Выполняю: curl -kL https://site2.local/test
+Результат:
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404 — Страница не найдена</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, sans-serif;
+    }
+
+    body {
+      display: grid;
+      min-height: 100vh;
+      margin: 0;
+      place-items: center;
+      color: #f8fafc;
+      background: linear-gradient(135deg, #111827, #312e81);
+    }
+
+    main {
+      max-width: 600px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(5rem, 18vw, 10rem);
+      line-height: 1;
+      color: #a78bfa;
+    }
+
+    h2 {
+      margin: 20px 0 12px;
+      font-size: 2rem;
+    }
+
+    p {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    a {
+      color: #7dd3fc;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>404</h1>
+    <h2>Страница не найдена</h2>
+    <p>
+      Возможно, адрес указан неправильно или страница была перемещена.
+    </p>
+    <p><a href="/">Вернуться на главную</a></p>
+  </main>
+</body>
+</html>
+Пытаемся запросить в firefox несуществующую страницу и отобразить нашу 404.html
