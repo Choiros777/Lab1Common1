@@ -268,6 +268,137 @@ Sep 28 10:30:50 Ubuntu systemd[1]: Started nginx.service - A high performance we
    ```
 Теперь в браузере по адресу https://localhost видим страницу своего frontend, согласившись открыть небезопасный сайт, т.к. браузер не доверяет самоподписному сертификату. 
 
+## День 4-й. Почти всё, но ещё не всЁ
+### Добавляем свою страницу на обработку ошибки 404 вместо стандартной
+<details>
+  <summary>Сейчас отображение ошибки 404 выглядит вот так</summary>
+
+![img.png](Screenshots/404_nginx.png)
+
+</details>
+
+Скопировали файл Lab_1/404.html в корень нашего сайта:
+
+```bash
+    sudo cp 404.html /var/www/Notes.app
+   ```
+
+<details>
+  <summary>После нашего волшебства над файлом /etc/nginx/sites-available/notes-app отображение ошибки 404 стало выглядеть красиво</summary>
+
+![img.png](Screenshots/404_best.png)
+
+</details>
+
+В итоге, файл настройки сервиса "Наши заметки" выглядит так:
+
+![img.png](Screenshots/notes_app.png)
+
+### Настраиваем второй виртуальный сервер (второй сайт)
+Эх, что-то с памятью моей стало, хорошо, что записала. Вспоминаем, что делали в первый день:
+Выпустили сертификат для нашего второго сайта. Назовем домен: site2.local и добавим ещё для интереса www.site2.local:
+   ```bash
+    openssl req -x509 -newkey rsa:4096 \
+      -keyout site2-local.key \
+      -out site2-local.crt \
+      -days 1095 -nodes \
+      -subj "/CN=site2.local" \
+      -addext "subjectAltName=DNS:site2.local,DNS:www.site2.local"   
+  ```
+Положили файл site2-local.key в каталог /etc/ssl/private/:
+   ```bash
+    sudo mv site2-local.key /etc/ssl/private/site2-local.key 
+  ```
+Положили файл site2-local.crt в каталог /etc/ssl/certs/:
+   ```bash
+    sudo mv site2-local.crt /etc/ssl/certs/site2-local.crt 
+  ```
+Создали папку нашего второго сайта и положили туда Lab_1/site2/index.html и Lab_1/404.html
+```bash
+  sudo mkdir /var/www/site2.local
+  sudo cp  Lab_1/site2/index.html Lab_1/404.html /var/www/site2.local
+  ```
+Создали файл настройки сайта site2.local, скопировав наш /etc/nginx/sites-available/notes-app:
+   ```bash
+    sudo cp /etc/nginx/sites-available/notes-app /etc/nginx/sites-available/site2-local
+  ```
+и поправили его так:
+
+![img.png](Screenshots/site2-local.png)
+
+Сделали симлинк в sites-enabled:
+   ```bash
+    sudo ln -s /etc/nginx/sites-available/site2-local  /etc/nginx/sites-enabled/site2-local 
+  ```
+
+Дали команду nginx перечитать конфигурацию и перезапуститься:
+   ```bash
+    sudo nginx -t
+    sudo service nginx reload
+   ```
+Вставили резолвинг на site2.local и www.site2.local в /etc/hosts
+
+![img.png](Screenshots/etc-hosts.png)
+
+Набрали в браузере http://www.site2.local/ согласились с рисками и увидели это:
+
+![img.png](Screenshots/site2.png)
+
+### Настраиваем заглушку для неизвестных виртуальных серверов (сайтов)
+Чтобы nginx ничего не выдал лишнего, кроме наших 2-х сайтов, делаем заглушку:
+
+  ```bash
+    sudo nano /etc/nginx/sites-available/000-catch-all
+  ```
+Чтобы не забыть, сразу активировали эту конфигурацию:
+
+  ```bash
+    sudo ln -s /etc/nginx/sites-available/000-catch-all \
+               /etc/nginx/sites-enabled/000-catch-all
+  ```
+Содержание файла /etc/nginx/sites-available/000-catch-all:
+
+   ```text
+    # Неизвестные HTTP-имена
+    server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+    
+        server_name _;
+    
+        return 444;
+    }
+    
+    # Неизвестные HTTPS-имена
+    server {
+        listen 443 ssl default_server;
+        listen [::]:443 ssl default_server;
+    
+        server_name _;
+    
+        ssl_certificate     /etc/ssl/certs/default.crt;
+        ssl_certificate_key /etc/ssl/private/default.key;
+    
+        return 444;
+    }
+   ```
+
+Создали сертификат для https заглушки:
+
+```bash
+sudo openssl req -x509 -nodes -newkey rsa:2048 \
+  -days 3650 \
+  -keyout /etc/ssl/private/default.key \
+  -out /etc/ssl/certs/default.crt \
+  -subj "/CN=invalid.local" \
+  -addext "subjectAltName=DNS:invalid.local"
+```
+Теперь веб-сервер не отдает ничего лишнего (разумеется после чтения конфигурации и перезапуска nginx)  
+   ```bash
+    sudo nginx -t
+    sudo service nginx reload
+   ```
+
 # Звездочка 
 
 Начнем с ffuf. ffuf - это это fuzzer для веб-приложений, утилита командной строки. Он берет слова из словаря и подставляет их в URL, отправляя тысячи запросов, чтобы найти скрытые страницы, файлы и директории. С помощью нее можно перебрать множество разных страниц сайта и, если повезет (или не повезет, смотря с какой стороны смотреть) найти то, куда заход рядового пользователя не планировался. Шаблон для использования такой -
@@ -281,7 +412,7 @@ ffuf -u https://example.com/FUZZ -w wordlist.txt
 sudo apt update
 sudo apt install -y ffuf
 ```
-Теперь выберем сайты для сканирования. Попробуем сначала teach-in.ru и artsacademy.ru - это сайт с лекциями по физике и математике и сайт вуза ГАИЖСА им. Репина. 
+Теперь выберем сайты для сканирования. Попробуем сначала teach-in.ru и artsacademy.ru - это сайт с лекциями по физике и математике и сайт вуза ГАИЖСА им. Репина. Также рассмторим сайт, созданный специально для обучения тестированию безопасности (чтобы уж точно все легально было), - OWASP Juice Shop.
 
 ## Дисклеймер (специально для придирчивых)
 Авторы не несут ответственности за использование материалов вне
@@ -348,7 +479,22 @@ ffuf -w /opt/SecLists/Discovery/Web-Content/common.txt -u https://teach-in.ru/FU
 ![img.png](Screenshots/ffufAcademy5.png)
 Итак, мы видим, что методов POST нет, значит, использовать доступ напрямую невозможно.
 
+Перейдем теперь к тестированию OWASP Juice Shop.
 
+Для начала запустим сайт (контейнер) через Docker: проверять будем только локальный Juice Shop.
+
+Результат ffuf:
+![img.png](Screenshots/ffuf_juice_shop.png)
+
+Посмотрим, что происходит в `\administration`.
+![img.png](Screenshots/administration_juice_shop.png)
+На страницу не пустили. :( Зато Juice Shop засчитал прохождение челленджа Error Handling - обработку ошибок.
+
+Далее посмотрим, что выведет команда `curl -i http://127.0.0.1:3000/ftp`. 
+![img.png](Screenshots/curl_juice_shop.png)
+О, это у нас - HTML-страница со списком файлов! Узнаем, что такое `acquisitions.md`.
+![img.png](Screenshots/acquisitions_juice_shop.png)
+Конфиденциальный документ? Любопытно. Думаю, удалось обнаружить **уязвимость**. 
 
 
 
