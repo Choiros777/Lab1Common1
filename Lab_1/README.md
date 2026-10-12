@@ -267,6 +267,101 @@ Sep 28 10:30:50 Ubuntu systemd[1]: Started nginx.service - A high performance we
     sudo service nginx reload
    ```
 Теперь в браузере по адресу https://localhost видим страницу своего frontend, согласившись открыть небезопасный сайт, т.к. браузер не доверяет самоподписному сертификату. 
+## День 3-й. Настраиваем nginx на проксирование Backend
+### Разбираемся с базой данных PostgreSQL на Ubuntu
+Поставили PostgreSQL:
+   ```bash
+    sudo apt install -y postgresql postgresql-contrib    
+   ```
+Дальше настроим доступ на наш PostgreSQL сервер снаружи, чтобы можно было подключиться используя PgAdmin:
+   ```bash
+    sudo cp /etc/postgresql/18/main/postgresql.conf /etc/postgresql/18/main/postgresql.conf.bak
+    sudo nano /etc/postgresql/18/main/postgresql.conf   
+   ```
+Нашли строку в /etc/postgresql/18/main/postgresql.conf:
+
+   ```text
+    #listen_addresses = 'localhost'
+   ```
+и заменили ее так:
+   ```text
+    listen_addresses = '*'
+   ```
+Разрешили подключения в pg_hba.conf
+   ```bash
+    sudo cp /etc/postgresql/18/main/pg_hba.conf /etc/postgresql/18/main/pg_hba.conf.bak
+    sudo nano /etc/postgresql/18/main/pg_hba.conf   
+   ```
+Нашли строку в /etc/postgresql/18/main/pg_hba.conf:
+
+   ```text
+    host    all             all             127.0.0.1/32            scram-sha-256
+   ```
+и заменили ее так:
+   ```text
+    host    all             all             0.0.0.0/0            scram-sha-256
+   ```
+Заменили пароль пользователю postgres:
+   ```bash
+    sudo -u postgres psql
+   ```
+   ```sql
+    ALTER USER postgres WITH PASSWORD 'passwordexample';
+   ```
+где 'passwordexample' дан только для примера. Реальный пароль другой и здесь опубликован не будет.
+
+Перечитали конфигурацию:
+   ```bash
+    sudo systemctl reload postgresql
+   ```
+Теперь можем подключиться с любого компа, который видит ip-адрес нашей виртуалки к установленному на ней PostgreSQL серверу.
+Подключились PgAdmin 4 и создали базу для бэкенда, как в лабе 0.
+Выполнили шаги по установке бэкенда, как в лабе 0.
+
+### Добавляем проксирование backend в конфигурацию нашего сервиса
+Пытаемся доделать настройки нашего сервиса:
+   ```bash
+    sudo nano /etc/nginx/sites-available/notes-app 
+  ```
+Сейчас файл настройки нашего сайта выглядит так:
+
+![img.png](Screenshots/notes_app2.png)
+
+Дали команду nginx перечитать конфигурацию и перезапуститься:
+   ```bash
+    sudo nginx -t
+    sudo service nginx reload
+   ```
+Теперь сервис "Наши заметки" полностью работает (если не забыть запустить хотя бы одни экземпляр нашего backend) и доступен по https, например https://127.0.0.1 или https://localhost.
+Осталось настроить редирект с http на https. 
+
+### Hастраиваем редирект с http на https
+Снова открываем на редактирование файл настройки нашего сервиса, чтобы сделать редирект с http на https:
+   ```bash
+    sudo nano /etc/nginx/sites-available/notes-app 
+  ```
+Чтобы не мешал дефолтный сайт nginx отключаем его:
+   ```bash
+    sudo unlink /etc/nginx/sites-enabled/default 
+  ```
+Дали команду nginx перечитать конфигурацию и перезапуститься:
+   ```bash
+    sudo nginx -t
+    sudo service nginx reload
+   ```
+Теперь сервис "Наши заметки" полностью работает (если не забыть запустить хотя бы одни экземпляр нашего backend) и доступен как по http, так и по https.
+
+   ```bash
+   cd ./Lab_0/backend
+   source .venv/bin/activate
+   flask --app run.py run --port 5101
+   flask --app run.py run --port 5102
+   ```
+
+На сегодня пока все.
+
+На текущий момент, файл настройки нашего сайта выглядит так:
+![img.png](Screenshots/notes_app2.png)
 
 ## День 4-й. Почти всё, но ещё не всЁ
 ### Добавляем свою страницу на обработку ошибки 404 вместо стандартной
