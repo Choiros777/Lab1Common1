@@ -1,0 +1,83 @@
+upstream notes_backend {
+    server 127.0.0.1:5101;
+    server 127.0.0.1:5102;
+}
+
+# HTTP → HTTPS редирект
+server {
+    listen 80;
+    server_name Notes.app localhost;
+    # редирект всего запроса на https с тем же хостом и путём
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name Notes.app localhost;
+
+    ssl_certificate     /etc/ssl/certs/notes-app.crt;
+    ssl_certificate_key /etc/ssl/private/notes-app.key;
+
+    # базовые настройки TLS (минимум)
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_prefer_server_ciphers off;
+    
+    root /var/www/Notes.app;
+    index index.html;
+    error_page 404 /404.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location = /404.html {
+        internal;
+    }
+
+    location = /docs {
+        return 301 /docs/;
+    }
+
+    location ^~ /docs/ {
+        alias /var/www/docs/;
+        index doc.html;
+
+        try_files $uri $uri/ /docs/doc.html;
+    }
+
+    location = /admin {
+        return 301 /admin/;
+    }
+
+    location ^~ /admin/ {
+        auth_basic "Notes administration";
+        auth_basic_user_file /etc/nginx/auth/notes-admin.htpasswd;
+
+        try_files $uri $uri/ /index.html;
+    }
+    location /api/ {
+	limit_req zone=api_per_ip burst=10 nodelay;
+	limit_req_status 429;
+	limit_req_log_level warn;
+        
+	proxy_pass http://notes_backend;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 30s;
+    }
+
+    location = /api/backend_health {
+        proxy_pass http://notes_backend/health;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
